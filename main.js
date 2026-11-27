@@ -15,10 +15,20 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true, nodeIntegration: false, sandbox: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js', 'preload.js')
     }
   });
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return;
+    const key = input.key.toLowerCase();
+    if ((input.control || input.meta) && key === 'm') {
+      event.preventDefault(); mainWindow.minimize();
+    }
+    if ((input.control || input.meta) && input.shift && key === 'w') {
+      event.preventDefault(); mainWindow.close();
+    }
+  });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://')) shell.openExternal(url);
     return { action: 'deny' };
